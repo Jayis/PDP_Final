@@ -8,6 +8,7 @@
 #include <unistd.h>
 #include<float.h>
 #include"eva.h"
+#include"combine.h"
 
 #define ROWS 4
 #define COLS 4

@@ -11,6 +11,7 @@ run: main
 simu : 
 	$(CC) $(CFLAGS) -c -fPIC simulation/*.cpp $(LDFLAGS)
 	$(CC) $(CFLAGS) -shared *.o -o libsimulation.so $(LDFLAGS)
+	$(CC) $(CFLAGS) -c -fPIC combine.cpp $(LDFLAGS)
 clean :
 	rm -rf *.o *.out *.so
 

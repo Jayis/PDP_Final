@@ -1,10 +1,15 @@
 #include <vector>
 #include <opencv2/core/core.hpp>
+//#include <opencv2/highgui/highgui.hpp>
 #define NC 3
+#include <cv.h>
+using namespace std;
+using namespace cv;
+
 
 // combine 4 images into 1, and update it into worldImage
 /*
-   void combine(mat worldImage, vector<mat> mList, vector<camera> cList)
+   void combine(Mat worldImage, vector<Mat> mList, vector<camera> cList)
    {
    unsigned char * wArray = worldImage.data;
    vector<unsigned char * > mArray;
@@ -31,7 +36,7 @@
    }
  */
 
-void combineWorld(mat worldImage, vector<mat> mList)
+void combineWorld(Mat worldImage, vector<Mat> mList)
 {
     unsigned char * wArray = (unsigned char*) worldImage.data;
     vector<unsigned char * > mArray;
@@ -39,7 +44,7 @@ void combineWorld(mat worldImage, vector<mat> mList)
     for(int i = 0; i < mList.size(); i++)
 	mArray[i] = (unsigned char*) mList[i].data;
 
-    for(int x = 0; x < worldImage.cols; x++) for(int y = 0; y < worldImage.rows, y++)
+    for(int x = 0; x < worldImage.cols; x++) for(int y = 0; y < worldImage.rows; y++)
     {
 	int worldIndex = (x + y * worldImage.cols) * NC;
 	vector<unsigned int> sum;
