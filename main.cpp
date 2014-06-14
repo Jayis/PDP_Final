@@ -18,6 +18,7 @@
 int w_rank, w_size; 
 int r_rank,c_rank,r_size,c_size;
 int nbr[4]={-1,-1,-1,-1};
+double k;
 MPI_Comm rowComm,colComm;
 
 double p(int,int);
@@ -93,6 +94,12 @@ int main(int argc,char* argv[]){
     y=y0;
     double alpha=0.5;
 	//routine
+	value = p(x,y);
+	
+	double maxval,minval;
+	MPI_Allreduce(&value,&maxval,1,MPI_DOUBLE,MPI_MAX,MPI_COMM_WORLD);
+	MPI_Allreduce(&value,&minval,1,MPI_DOUBLE,MPI_MIN,MPI_COMM_WORLD);
+	k = maxval-minval;	
 	while(stop==0){
 		value = p(x,y);// the importance function
 		sendVal(value,x,y);
@@ -106,12 +113,12 @@ int main(int argc,char* argv[]){
 
 		//Barrier with Stop Signal
 		cnt++;
-        
+       /* 
         if(cnt%12==0){
             x= alpha*x + (1-alpha)*x0;
             y= alpha*y + (1-alpha)*y0;
         }
-        
+        */
 		if(w_rank==0){
 			if(cnt >100)
 				stop=1;
@@ -171,7 +178,7 @@ void trgtByVal(int* x,int* y,double value,double* rel_value,int* x_pos,int* y_po
     int i;
     double dy=0,dx=0;
     double Hy=0,Hx=0;
-    double k =500,xsq,ysq;
+    double xsq,ysq;
 	double xd,yd;
     for(i=0;i<4;i++){
         xd=((*x-x_pos[i])/(double)default_w);
