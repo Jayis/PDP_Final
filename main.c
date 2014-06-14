@@ -94,13 +94,14 @@ int main(int argc,char* argv[]){
 		recvVal(rel_value,x_pos,y_pos);
 
 		doImageProcessing();
-		printf("%d,%d|%d,%d|%d,%f\n",r_rank,c_rank,x,y,cnt,MPI_Wtime());
+    //    if(w_rank==5)
+	    printf("%d,%d|%d,%d|%d,%f\n",r_rank,c_rank,x,y,cnt,MPI_Wtime());
 		trgtByVal(&x,&y,value,rel_value,x_pos,y_pos);
 
 		//Barrier with Stop Signal
 		cnt++;
 		if(w_rank==0){
-			if(cnt >1)
+			if(cnt >20)
 				stop=1;
 		}
 		MPI_Bcast(&stop,1,MPI_INT,0,MPI_COMM_WORLD);
@@ -162,6 +163,7 @@ void trgtByVal(int* x,int* y,double value,double* rel_value,int* x_pos,int* y_po
         else if(*y<y_pos[1])
             *y=y_pos[1]+1;
     }
+    //if(w_rank==5){printf("%f\n",dy);}
     if(source[2]!=-1 && source[3]!=-1){
         dx += -(value - rel_value[2])/(*x-x_pos[2]);
         dx += -(value - rel_value[3])/(*x-x_pos[3]);
