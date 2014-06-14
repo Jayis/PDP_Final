@@ -1,10 +1,10 @@
 #include "simulation.h"
 
-void simulation_init ( const string& srcvideo, const string& destination )
+void simulation_init ()
 {
-	VideoCapture inputVideo( destination + srcvideo );
+	VideoCapture inputVideo( destination + source );
 	if (! inputVideo.isOpened() ) {
-		cout << "Can't open Video : " << srcvideo << endl;
+		cout << "Can't open Video : " << source << endl;
 		return ;
 	}
 
@@ -23,7 +23,7 @@ void simulation_init ( const string& srcvideo, const string& destination )
 
 }
 
-Mat take_pic ( const camera& cam, const float& global_t, const string& destination )
+Mat take_pic ( const camera& cam, const float& global_t )
 {
 	int frame_idx = (global_t * 24);
 	float center_x = int (cam.center_x) + 0.5;

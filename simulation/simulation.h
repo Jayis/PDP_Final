@@ -17,8 +17,11 @@
 using namespace std;
 using namespace cv;
 
-void simulation_init ( const string& srcvideo, const string& destination );
+const string source = "source.avi";
+const string destination = "test/";
 
-Mat take_pic ( const camera& cam, const float& global_t, const string& destination );
+void simulation_init ();
+
+Mat take_pic ( const camera& cam, const float& global_t );
 
 #endif
