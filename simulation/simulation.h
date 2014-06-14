@@ -17,8 +17,8 @@
 using namespace std;
 using namespace cv;
 
-const string source = "source.avi";
-const string destination = "simulation/test/";
+const string source = "v.mp4";
+const string destination = "simulation/vtest/";
 
 void simulation_init ();
 
