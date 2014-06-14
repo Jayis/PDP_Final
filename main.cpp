@@ -9,8 +9,8 @@
 #include<float.h>
 #include"eva.h"
 
-#define ROWS 1
-#define COLS 1
+#define ROWS 4
+#define COLS 4
 #define SCRWIDTH	1278
 #define SCRHEIGHT	1600
 
@@ -72,8 +72,8 @@ int main(int argc,char* argv[]){
 	//
 	x = SCRWIDTH*(2*r_rank+1)/(2*r_size);
 	y = SCRHEIGHT*(2*c_rank+1)/(2*c_size);
-    default_w=10;
-    default_h=10;
+    default_w=SCRWIDTH/4-5;
+    default_h=SCRHEIGHT/4-5;
     //
     if(c_rank!=c_size-1){//from up
         nbr[0]=getwrank(r_rank,c_rank+1);
@@ -117,8 +117,8 @@ double p(int x,int y){
     camera cam;
     cam.center_x=x;
     cam.center_y=y;
-    printf("%d,%d\n",x,y);
-	return eva(cam,0);
+    double res = eva(cam,0);
+	return -res;
 }
 
 void sendVal(double val,int x,int y){

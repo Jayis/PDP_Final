@@ -7,8 +7,8 @@ LIBS=-L./ -lsimulation
 main: simu
 	$(MPICC) $(CFLAGS) main.cpp $(LIBS) $(LDFLAGS)
 run: main 
-	mpiexec -n 1 a.out
-simu : 
+	mpiexec -n 16 a.out
+simu : *.o *.so
 	$(CC) $(CFLAGS) -c -fPIC simulation/*.cpp $(LDFLAGS)
 	$(CC) $(CFLAGS) -shared *.o -o libsimulation.so $(LDFLAGS)
 clean :
