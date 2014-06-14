@@ -16,6 +16,7 @@ for line in open('result'):
 
 for i in dats.keys():
     fig=plt.figure()
+    plt.axis([0,1000,0,1000])
     plt.plot(dats[i]["x"],dats[i]["y"],'o')
     fig.savefig('figures/'+str(i).zfill(3)+'.png')
     plt.close(fig)
