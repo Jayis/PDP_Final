@@ -36,6 +36,7 @@ using namespace cv;
    }
  */
 
+
 void combineWorld(Mat worldImage1, vector<Mat> mList)
 {
 	Mat* worldImage = &worldImage1;
@@ -73,4 +74,60 @@ void combineWorld(Mat worldImage1, vector<Mat> mList)
     }
 }
 
+void combineWorld2(Mat worldImage1, unsigned char * recvbuf, int scrwidth, int scrheight, int ccc)
+{
+    int totalLength = scrwidth * scrheight * NC;
+    Mat* worldImage = &worldImage1;
+    unsigned char * wArray = (unsigned char*) (*worldImage).data;
+    vector<unsigned char * > mArray;
+    mArray.resize(ccc);
+    for(int i = 0; i < ccc; i++)
+	mArray[i] = (unsigned char*) (recvbuf + i*totalLength);
 
+    for(int x = 0; x < (*worldImage).cols; x++) for(int y = 0; y < (*worldImage).rows; y++)
+    {
+	int worldIndex = (x + y * (*worldImage).cols) * NC;
+	vector<unsigned int> sum;
+	sum.resize(NC);
+	for(int i = 0; i < NC; i++) sum[i] = 0;
+	int count = 0;
+
+	for(int ind = 0; ind < ccc; ind++)
+	{
+	    bool has_Value = false;
+	    for(int chnl = 0; chnl < NC; chnl++)
+		    if(mArray[ind][ worldIndex + chnl ] != 0)
+		    {
+			    has_Value = true;
+			    sum[chnl] += (unsigned int) mArray[ind][ worldIndex + chnl ];
+		    }
+	    if(has_Value) count++;
+	}
+	
+	for(int chnl = 0; chnl < NC; chnl++){
+		if (count == 0){
+//			wArray[worldIndex + chnl] = 0;
+			continue;
+		}
+		wArray[worldIndex + chnl] += (unsigned char)(sum[chnl] / count);
+	}
+    }
+//	worldImage1.data
+}
+
+void combineWorld3(Mat worldImage1, unsigned char * recvbuf, int scrwidth, int scrheight, int ccc)
+{
+	unsigned int total = scrheight * scrwidth * 3;
+	vector<Mat> mList;
+	for (int i = 0; i < ccc; i++){
+		Mat* ptr = new Mat(scrheight,scrwidth, CV_8UC3, Scalar(0,0,0));
+		mList.push_back(*ptr);
+	}
+	for (int i = 0; i < ccc; i++){
+		unsigned char* temp = recvbuf + i * total;
+		for (int x = 0; x < total; x++){
+			mList[i].data[x] = *(temp + x);
+		}
+	}
+	combineWorld(worldImage1, mList);
+}
