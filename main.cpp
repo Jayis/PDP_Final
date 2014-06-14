@@ -21,7 +21,7 @@ int r_rank,c_rank,r_size,c_size;
 int nbr[4]={-1,-1,-1,-1};
 MPI_Comm rowComm,colComm;
 
-double p(int,int);
+double p(int,int,Mat*);
 void sendVal(double,int,int);
 void recvVal(double*,int*,int*);
 void doImageProcessing();
@@ -93,9 +93,10 @@ int main(int argc,char* argv[]){
     x=x0;
     y=y0;
     double alpha=0.9;
+    Mat img;
 	//routine
 	while(stop==0){
-		value = p(x,y);// the importance function
+		value = p(x,y,&img);// the importance function
 		sendVal(value,x,y);
 		//printf("%d\n",w_rank);
 		recvVal(rel_value,x_pos,y_pos);
@@ -124,11 +125,11 @@ int main(int argc,char* argv[]){
 	exit(0);
 }
 
-double p(int x,int y){
+double p(int x,int y,Mat* img){
     camera cam;
     cam.center_x=x;
     cam.center_y=y;
-    double res = eva(cam,0);
+    double res = eva(cam,0,img);
 	return -res;
 }
 
