@@ -9,8 +9,8 @@
 #include<float.h>
 #include"eva.h"
 
-#define ROWS 4
-#define COLS 4
+#define ROWS 6
+#define COLS 6
 #define SCRWIDTH	1000
 #define SCRHEIGHT	1000
 
@@ -91,7 +91,7 @@ int main(int argc,char* argv[]){
 	time_t ltime;
     x=x0;
     y=y0;
-    double alpha=0.5;
+    double alpha=0.9;
 	//routine
 	while(stop==0){
 		value = p(x,y);// the importance function
@@ -106,12 +106,12 @@ int main(int argc,char* argv[]){
 
 		//Barrier with Stop Signal
 		cnt++;
-        
+       /* 
         if(cnt%12==0){
             x= alpha*x + (1-alpha)*x0;
             y= alpha*y + (1-alpha)*y0;
         }
-        
+        */
 		if(w_rank==0){
 			if(cnt >100)
 				stop=1;
@@ -171,7 +171,7 @@ void trgtByVal(int* x,int* y,double value,double* rel_value,int* x_pos,int* y_po
     int i;
     double dy=0,dx=0;
     double Hy=0,Hx=0;
-    double k =0.1,xsq,ysq;
+    double k =10,xsq,ysq;
     for(i=0;i<4;i++){
         xsq=((*x-x_pos[i])/(double)default_w);
         ysq=((*y-y_pos[i])/(double)default_h);
@@ -181,6 +181,7 @@ void trgtByVal(int* x,int* y,double value,double* rel_value,int* x_pos,int* y_po
     if(nbr[0]!=-1 && nbr[1]!=-1){
         Hy += (value - rel_value[0])/(*y-y_pos[0]);
         Hy += (value - rel_value[1])/(*y-y_pos[1]);
+		Hy = Hy/(y_pos[1]-y_pos[0]);
         dy = -10*(rel_value[0]-rel_value[1])/(y_pos[0]-y_pos[1])/Hy;
         if(dy > default_h/4)
             dy = default_h/4;
@@ -196,6 +197,7 @@ void trgtByVal(int* x,int* y,double value,double* rel_value,int* x_pos,int* y_po
     if(nbr[2]!=-1 && nbr[3]!=-1){
         Hx += (value - rel_value[2])/(*x-x_pos[2]);
         Hx += (value - rel_value[3])/(*x-x_pos[3]);
+		Hx = Hx/(x_pos[1]-x_pos[0]);
         dx = -10*(rel_value[2]-rel_value[3])/(x_pos[2]-x_pos[3])/Hx;
         if(dx > default_w/4)
             dx = default_w/4;
