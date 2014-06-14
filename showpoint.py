@@ -17,4 +17,4 @@ for line in open('result'):
 for i in dats.keys():
     fig=plt.figure()
     plt.plot(dats[i]["x"],dats[i]["y"],'o')
-    fig.savefig('figures/'str(i)+'.png')
+    fig.savefig('figures/'+str(i)+'.png')
