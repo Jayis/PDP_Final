@@ -238,6 +238,23 @@ void doImageProcessing(int x, int y, Mat img, int r_rank, int c_rank, int w_rank
 	MPI_Bcast(stop,1,MPI_INT,0,rowComm);
 }
 
+void combineWithHistory(Mat oldMat, Mat newMat)
+{
+    assert(oldMat.cols == newMat.cols);
+    assert(oldMat.rows == newMat.rows);
+    for(int i = 0; i < oldMat.cols * oldMat.rows; i++)
+    {
+	bool hasValue = false;
+	for(int j = 0; j < 3; j++)
+	    if( newMat.data[i * 3 + j] != 0)
+		hasValue = true;
+	if(!hasValue)
+	    for(int j = 0; j < 3; j++)
+		newMat.data[i * 3 + j] = oldMat.data[i * 3 + j];
+    }
+    
+}
+
 void camera2globalPic(Mat input, int center_x, int center_y, unsigned char* output)
 {
     int totalLength = SCRWIDTH  * SCRHEIGHT * 3;
