@@ -171,16 +171,17 @@ void trgtByVal(int* x,int* y,double value,double* rel_value,int* x_pos,int* y_po
     int i;
     double dy=0,dx=0;
     double Hy=0,Hx=0;
-    double k =10,xsq,ysq;
+    double k =500,xsq,ysq;
+	double xd,yd;
     for(i=0;i<4;i++){
-        xsq=((*x-x_pos[i])/(double)default_w);
-        ysq=((*y-y_pos[i])/(double)default_h);
-        value = value + k*xsq*xsq;
-        value = value + k*ysq*ysq;
+        xd=((*x-x_pos[i])/(double)default_w);
+        yd=((*y-y_pos[i])/(double)default_h);
+        xsq = xsq + k*xd*xd;
+        ysq = ysq + k*yd*yd;
     }
     if(nbr[0]!=-1 && nbr[1]!=-1){
-        Hy += (value - rel_value[0])/(*y-y_pos[0]);
-        Hy += (value - rel_value[1])/(*y-y_pos[1]);
+        Hy += (value +ysq - rel_value[0])/(*y-y_pos[0]);
+        Hy += (value +ysq- rel_value[1])/(*y-y_pos[1]);
 		Hy = Hy/(y_pos[1]-y_pos[0]);
         dy = -10*(rel_value[0]-rel_value[1])/(y_pos[0]-y_pos[1])/Hy;
         if(dy > default_h/4)
@@ -188,15 +189,15 @@ void trgtByVal(int* x,int* y,double value,double* rel_value,int* x_pos,int* y_po
         else if(dy < -default_h/4)
             dy=-default_h/4;
         *y= *y +dy;
-        if(*y>y_pos[0]-default_h/4)
-            *y=y_pos[0]-default_h/4;
-        else if(*y<y_pos[1]+default_h/4)
-            *y=y_pos[1]+default_h/4;
+        if(*y>y_pos[0]-default_h/2)
+            *y=y_pos[0]-default_h/2;
+        else if(*y<y_pos[1]+default_h/2)
+            *y=y_pos[1]+default_h/2;
     }
     //if(w_rank==5){printf("%f\n",dy);}
     if(nbr[2]!=-1 && nbr[3]!=-1){
-        Hx += (value - rel_value[2])/(*x-x_pos[2]);
-        Hx += (value - rel_value[3])/(*x-x_pos[3]);
+        Hx += (value +xsq- rel_value[2])/(*x-x_pos[2]);
+        Hx += (value +xsq- rel_value[3])/(*x-x_pos[3]);
 		Hx = Hx/(x_pos[1]-x_pos[0]);
         dx = -10*(rel_value[2]-rel_value[3])/(x_pos[2]-x_pos[3])/Hx;
         if(dx > default_w/4)
@@ -204,10 +205,10 @@ void trgtByVal(int* x,int* y,double value,double* rel_value,int* x_pos,int* y_po
         else if(dx < -default_w/4)
             dx=-default_w/4;
         *x+=dx;
-        if(*x>x_pos[2]-default_w/4)
-            *x=x_pos[2]-default_w/4;
-        else if(*x<x_pos[3]+default_w/4)
-            *x=x_pos[3]+default_w/4;
+        if(*x>x_pos[2]-default_w/2)
+            *x=x_pos[2]-default_w/2;
+        else if(*x<x_pos[3]+default_w/2)
+            *x=x_pos[3]+default_w/2;
     }
     
  //   printf("%d,%d,%d,%d dx=%f,dy=%f\n", nbr[0],nbr[1],nbr[2],nbr[3],dx,dy);
