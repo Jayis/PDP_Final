@@ -10,10 +10,10 @@
 using namespace std;
 using namespace cv;
 
-double eva(const camera& cam, const int& t)
+double eva(const camera& cam, const int& t, Mat* img)
 {
-	Mat img, img_Y;
-	img = take_pic ( cam, t);
+	Mat img_Y;
+	*img = take_pic ( cam, t);
 	//namedWindow( "gg window", WINDOW_AUTOSIZE );
 	//imshow( "gg window", img ); 
 
@@ -21,8 +21,8 @@ double eva(const camera& cam, const int& t)
 	//IplImage* tempYIQ = convertImageRGBtoYIQ (temp);
 	//IplImage* tempY = GetYImg (tempYIQ);
 
-	GaussianBlur( img, img, Size(3,3), 0, 0, BORDER_DEFAULT );
-	cvtColor( img, img_Y, CV_RGB2GRAY );
+	GaussianBlur( *img, *img, Size(3,3), 0, 0, BORDER_DEFAULT );
+	cvtColor( *img, img_Y, CV_RGB2GRAY );
 	
 	Mat grad;
 	Mat grad_x, grad_y;
