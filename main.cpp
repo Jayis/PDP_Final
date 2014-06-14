@@ -103,7 +103,7 @@ int main(int argc,char* argv[]){
 		//Barrier with Stop Signal
 		cnt++;
 		if(w_rank==0){
-			if(cnt >20)
+			if(cnt >100)
 				stop=1;
 		}
 		MPI_Bcast(&stop,1,MPI_INT,0,MPI_COMM_WORLD);
@@ -117,7 +117,7 @@ double p(int x,int y){
     camera cam;
     cam.center_x=x;
     cam.center_y=y;
-    double res = eva(cam,0);
+    double res = eva(cam,1);
 	return -res;
 }
 
@@ -165,22 +165,22 @@ void trgtByVal(int* x,int* y,double value,double* rel_value,int* x_pos,int* y_po
         Hy += (value - rel_value[0])/(*y-y_pos[0]);
         Hy += (value - rel_value[1])/(*y-y_pos[1]);
         dy = -(rel_value[0]-rel_value[1])/(y_pos[0]-y_pos[1])/Hy;
-        *y= *y +dy;
-        if(*y>y_pos[0])
-            *y=y_pos[0]-1;
-        else if(*y<y_pos[1])
-            *y=y_pos[1]+1;
+        *y= *y +10*dy;
+        if(*y>y_pos[0]-default_h/10)
+            *y=y_pos[0]-default_h/10;
+        else if(*y<y_pos[1]+default_h/10)
+            *y=y_pos[1]+default_h/10;
     }
     //if(w_rank==5){printf("%f\n",dy);}
     if(nbr[2]!=-1 && nbr[3]!=-1){
         Hx += (value - rel_value[2])/(*x-x_pos[2]);
         Hx += (value - rel_value[3])/(*x-x_pos[3]);
         dx = -(rel_value[2]-rel_value[3])/(x_pos[2]-x_pos[3])/Hx;
-        *x+=dx;
-        if(*x>x_pos[2])
-            *x=x_pos[2]-1;
-        else if(*x<x_pos[3])
-            *x=x_pos[3]+1;
+        *x+=10*dx;
+        if(*x>x_pos[2]-default_w/10)
+            *x=x_pos[2]-default_w/10;
+        else if(*x<x_pos[3]+default_w/10)
+            *x=x_pos[3]+default_w/10;
     }
     
  //   printf("%d,%d,%d,%d dx=%f,dy=%f\n", nbr[0],nbr[1],nbr[2],nbr[3],dx,dy);
