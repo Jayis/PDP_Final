@@ -1,9 +1,9 @@
 import matplotlib.pyplot as plt
 from matplotlib import animation
 
-f=open('result','r')
+f=open('results/result','r')
 dats = {}
-for line in open('result'):
+for line in open('results/result'):
     line = f.readline()
     data = line.split("|")
     [x,y] = data[1].split(",")
@@ -19,7 +19,7 @@ def animate(i):
     plt.cla()
     plt.axis([0,1000,1000,0])
     plt.plot(dats[i]["x"],dats[i]["y"],'o')
-    im = plt.imread('simulation/test/2.jpg')
+    im = plt.imread("results/result-"+str(i)+".jpg")
     implot = plt.imshow(im)
 
 fig =plt.figure()

@@ -4,7 +4,7 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
-#include "../eva.h"
+//#include "../eva.h"
 
 #include "simulation.h"
 
@@ -13,14 +13,14 @@ using namespace cv;
 
 int main()
 {
-	//simulation_init( source , img_seq_dir);
-	
+	simulation_init();
+	/*
 	camera cam;
 	cam.center_x = 778;
 	cam.center_y = 1400;
 	cam.height = 10;
 	cam.width = 10;
-
+	*/
 	//float sum = eva(cam, 0);
 	
 	/*
@@ -66,9 +66,9 @@ int main()
 
 	printf("f\n");
 	*/
-	printf("sum:%f\n", sum);
+	//printf("sum:%f\n", sum);
 	
 
-	waitKey(0);
+	//waitKey(0);
 	return 0;
 }
