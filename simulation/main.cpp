@@ -4,6 +4,7 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
+#include "../eva.h"
 
 #include "simulation.h"
 
@@ -15,6 +16,14 @@ int main()
 	//simulation_init( source , img_seq_dir);
 	
 	camera cam;
+	cam.center_x = 778;
+	cam.center_y = 1400;
+	cam.height = 10;
+	cam.width = 10;
+
+	float sum = eva(cam, 0);
+	
+	/*
 	Mat img, img_Y;
 	img = take_pic ( cam, 0);
 	namedWindow( "gg window", WINDOW_AUTOSIZE );
@@ -56,8 +65,9 @@ int main()
         }
 
 	printf("f\n");
+	*/
 	printf("sum:%f\n", sum);
-
+	
 
 	waitKey(0);
 	return 0;
