@@ -9,21 +9,22 @@
 #include<float.h>
 
 
-#define ROWS 2
-#define COLS 3
-#define SCRWIDTH	920
-#define SCRHEIGHT	1080
+#define ROWS 4
+#define COLS 4
+#define SCRWIDTH	1080
+#define SCRHEIGHT	920
 
 //ranks and sizes
 int w_rank, w_size; 
 int r_rank,c_rank,r_size,c_size;
+int source[4]={-1,-1,-1,-1};
 MPI_Comm rowComm,colComm;
 
 double p(int,int);
 void sendVal(double,int,int);
 void recvVal(double*,int*,int*);
 void doImageProcessing();
-void trgtByVal(int*,int*,int,double*);
+void trgtByVal(int*,int*,double,double*,int*,int*);
 int getwrank(int,int);
 
 int main(int argc,char* argv[]){
@@ -71,8 +72,20 @@ int main(int argc,char* argv[]){
 	//
 	x = SCRWIDTH*(2*r_rank+1)/(2*r_size);
 	y = SCRHEIGHT*(2*c_rank+1)/(2*c_size);
-
-		time_t ltime;
+    
+    if(c_rank!=c_size-1){//from up
+        source[0]=getwrank(r_rank,c_rank+1);
+    }
+    if(c_rank!=0){//from down
+        source[1]=getwrank(r_rank,c_rank-1);
+    }
+    if(r_rank!=r_size-1){//from right
+        source[2]=getwrank(r_rank+1,c_rank);
+    }
+    if(r_rank!=0){//from left
+        source[3]=getwrank(r_rank-1,c_rank);
+    }
+	time_t ltime;
 	//routine
 	while(stop==0){
 		value = p(x,y);// the importance function
@@ -81,8 +94,8 @@ int main(int argc,char* argv[]){
 		recvVal(rel_value,x_pos,y_pos);
 
 		doImageProcessing();
-		printf("{[%d,%d]|(%d,%d)|%d,%f}\n",r_rank,c_rank,x,y,cnt,MPI_Wtime());
-		trgtByVal(&x,&y,value,rel_value);
+		printf("%d,%d|%d,%d|%d,%f\n",r_rank,c_rank,x,y,cnt,MPI_Wtime());
+		trgtByVal(&x,&y,value,rel_value,x_pos,y_pos);
 
 		//Barrier with Stop Signal
 		cnt++;
@@ -98,7 +111,7 @@ int main(int argc,char* argv[]){
 }
 
 double p(int x,int y){
-	return 1.0;
+	return (x) + (y);
 }
 
 void sendVal(double val,int x,int y){
@@ -107,19 +120,6 @@ void sendVal(double val,int x,int y){
 	sendbuf[0]=val;
 	sendbuf[1]=(double) x;
 	sendbuf[2]=(double) y;
-	int source[4]={-1,-1,-1,-1};
-	if(c_rank!=c_size-1){//from up
-		source[0]=getwrank(r_rank,c_rank+1);
-	}
-	if(c_rank!=0){//from down
-		source[1]=getwrank(r_rank,c_rank-1);
-	}
-	if(r_rank!=r_size-1){//from right
-		source[2]=getwrank(r_rank+1,c_rank);
-	}
-	if(r_rank!=0){//from left
-		source[3]=getwrank(r_rank-1,c_rank);
-	}
 	int i;
 	for(i=0;i<4;i++){
 		if(source[i]!=-1){
@@ -132,25 +132,12 @@ void recvVal(double* rel_val,int* x_pos,int* y_pos){
 	MPI_Status stat[4];
 	MPI_Request req[4];
 	double recvbuf[4][3];
-	int source[4]={-1,-1,-1,-1};
-	if(c_rank!=c_size-1){//from up
-		source[0]=getwrank(r_rank,c_rank+1);
-	}
-	if(c_rank!=0){//from down
-		source[1]=getwrank(r_rank,c_rank-1);
-	}
-	if(r_rank!=r_size-1){//from right
-		source[2]=getwrank(r_rank+1,c_rank);
-	}
-	if(r_rank!=0){//from left
-		source[3]=getwrank(r_rank-1,c_rank);
-	}
 	int i;
 	for(i=0;i<4;i++)
-		if(source[i]>=0)
+		if(source[i]!=-1)
 			MPI_Irecv(recvbuf+i,3,MPI_DOUBLE,source[i],0,MPI_COMM_WORLD,req+i);
 	for(i=0;i<4;i++)
-		if(source[i]>=0){
+		if(source[i]!=-1){
 			MPI_Wait(req+i,stat+i);
 			rel_val[i]=recvbuf[i][0];
 			x_pos[i]=(int)recvbuf[i][1];
@@ -163,7 +150,30 @@ void recvVal(double* rel_val,int* x_pos,int* y_pos){
 }
 
 void doImageProcessing(){}
-void trgtByVal(int* x,int* y,int value,double* rel_value){}
+void trgtByVal(int* x,int* y,double value,double* rel_value,int* x_pos,int* y_pos){
+    int i;
+    double dy=0,dx=0;
+    if(source[0]!=-1 && source[1]!=-1){
+        dy += -(value - rel_value[0])/(*y-y_pos[0]);
+        dy += -(value - rel_value[1])/(*y-y_pos[1]);
+        *y= *y +dy;
+        if(*y>y_pos[0])
+            *y=y_pos[0]-1;
+        else if(*y<y_pos[1])
+            *y=y_pos[1]+1;
+    }
+    if(source[2]!=-1 && source[3]!=-1){
+        dx += -(value - rel_value[2])/(*x-x_pos[2]);
+        dx += -(value - rel_value[3])/(*x-x_pos[3]);
+        *x+=dx;
+        if(*x>x_pos[2])
+            *x=x_pos[2]-1;
+        else if(*x<x_pos[3])
+            *x=x_pos[3]+1;
+    }
+    
+ //   printf("%d,%d,%d,%d dx=%f,dy=%f\n", source[0],source[1],source[2],source[3],dx,dy);
+}
 int getwrank(int r,int c){
 	return c*COLS+r;
 }
