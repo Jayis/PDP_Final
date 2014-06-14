@@ -161,6 +161,13 @@ void trgtByVal(int* x,int* y,double value,double* rel_value,int* x_pos,int* y_po
     int i;
     double dy=0,dx=0;
     double Hy=0,Hx=0;
+    double k =0.1,xsq,ysq;
+    for(i=0;i<4;i++){
+        xsq=((*x-x_pos[i])/(double)default_w);
+        ysq=((*y-y_pos[i])/(double)default_h);
+        value = value + k*xsq*xsq;
+        value = value + k*ysq*ysq;
+    }
     if(nbr[0]!=-1 && nbr[1]!=-1){
         Hy += (value - rel_value[0])/(*y-y_pos[0]);
         Hy += (value - rel_value[1])/(*y-y_pos[1]);
