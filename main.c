@@ -112,7 +112,7 @@ int main(int argc,char* argv[]){
 }
 
 double p(int x,int y){
-	return (x) + (y);
+	return 1000*(x+y);
 }
 
 void sendVal(double val,int x,int y){
@@ -157,6 +157,7 @@ void trgtByVal(int* x,int* y,double value,double* rel_value,int* x_pos,int* y_po
     if(source[0]!=-1 && source[1]!=-1){
         dy += -(value - rel_value[0])/(*y-y_pos[0]);
         dy += -(value - rel_value[1])/(*y-y_pos[1]);
+        dy = (rel_value[0]-rel_value[1])/(y_pos[0]-y_pos[1])/dy;
         *y= *y +dy;
         if(*y>y_pos[0])
             *y=y_pos[0]-1;
@@ -167,6 +168,7 @@ void trgtByVal(int* x,int* y,double value,double* rel_value,int* x_pos,int* y_po
     if(source[2]!=-1 && source[3]!=-1){
         dx += -(value - rel_value[2])/(*x-x_pos[2]);
         dx += -(value - rel_value[3])/(*x-x_pos[3]);
+        dx = (rel_value[2]-rel_value[3])/(x_pos[2]-x_pos[3])/dx;
         *x+=dx;
         if(*x>x_pos[2])
             *x=x_pos[2]-1;
