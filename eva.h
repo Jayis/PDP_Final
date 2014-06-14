@@ -32,15 +32,14 @@ double eva(const camera& cam, const int& t)
 	Sobel( img_Y, grad_x, -1, 1, 0, 3, 1, 0, BORDER_DEFAULT);
 	convertScaleAbs(grad_x, abs_grad_x);
 
-	Sobel( img_Y, grad_x, -1, 0, 1, 3, 1, 0, BORDER_DEFAULT);
+	Sobel( img_Y, grad_y, -1, 0, 1, 3, 1, 0, BORDER_DEFAULT);
 	convertScaleAbs(grad_y, abs_grad_y);
 
 	addWeighted( abs_grad_x, 0.5, abs_grad_y, 0.5, 0, grad);
 	
-	int i, y;
+	int i, j;
 	double sum = 0;
 	unsigned char* data = (unsigned char*)(grad.data);
-    int j;
 	for (i = 0; i < grad.rows; i++){
 		for (j = 0; j < grad.cols; j++){
 			sum += (double)data[i*grad.cols + j]/255;

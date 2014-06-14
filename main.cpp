@@ -9,8 +9,8 @@
 #include<float.h>
 #include"eva.h"
 
-#define ROWS 4
-#define COLS 4
+#define ROWS 1
+#define COLS 1
 #define SCRWIDTH	1278
 #define SCRHEIGHT	1600
 
@@ -115,11 +115,10 @@ int main(int argc,char* argv[]){
 
 double p(int x,int y){
     camera cam;
-    printf("h:%d", cam.height);
-    printf("w:%d", cam.width);
     cam.center_x=x;
     cam.center_y=y;
-	return x+y;
+    printf("%d,%d\n",x,y);
+	return eva(cam,0);
 }
 
 void sendVal(double val,int x,int y){
