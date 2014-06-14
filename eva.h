@@ -40,7 +40,6 @@ double eva(const camera& cam, const int& t)
 	int i, j;
 	double sum = 0;
 	unsigned char* data = (unsigned char*)(grad.data);
-
 	for (i = 0; i < grad.rows; i++){
 		for (j = 0; j < grad.cols; j++){
 			sum += (double)data[i*grad.cols + j]/255;

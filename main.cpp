@@ -7,17 +7,17 @@
 #include<time.h>
 #include <unistd.h>
 #include<float.h>
-
+#include"eva.h"
 
 #define ROWS 4
 #define COLS 4
-#define SCRWIDTH	1080
-#define SCRHEIGHT	920
+#define SCRWIDTH	1278
+#define SCRHEIGHT	1600
 
 //ranks and sizes
 int w_rank, w_size; 
 int r_rank,c_rank,r_size,c_size;
-int source[4]={-1,-1,-1,-1};
+int nbr[4]={-1,-1,-1,-1};
 MPI_Comm rowComm,colComm;
 
 double p(int,int);
@@ -72,18 +72,20 @@ int main(int argc,char* argv[]){
 	//
 	x = SCRWIDTH*(2*r_rank+1)/(2*r_size);
 	y = SCRHEIGHT*(2*c_rank+1)/(2*c_size);
-    
+    default_w=SCRWIDTH/4-5;
+    default_h=SCRHEIGHT/4-5;
+    //
     if(c_rank!=c_size-1){//from up
-        source[0]=getwrank(r_rank,c_rank+1);
+        nbr[0]=getwrank(r_rank,c_rank+1);
     }
     if(c_rank!=0){//from down
-        source[1]=getwrank(r_rank,c_rank-1);
+        nbr[1]=getwrank(r_rank,c_rank-1);
     }
     if(r_rank!=r_size-1){//from right
-        source[2]=getwrank(r_rank+1,c_rank);
+        nbr[2]=getwrank(r_rank+1,c_rank);
     }
     if(r_rank!=0){//from left
-        source[3]=getwrank(r_rank-1,c_rank);
+        nbr[3]=getwrank(r_rank-1,c_rank);
     }
 	time_t ltime;
 	//routine
@@ -112,7 +114,11 @@ int main(int argc,char* argv[]){
 }
 
 double p(int x,int y){
-	return 1000*(x+y);
+    camera cam;
+    cam.center_x=x;
+    cam.center_y=y;
+    double res = eva(cam,0);
+	return -res;
 }
 
 void sendVal(double val,int x,int y){
@@ -123,8 +129,8 @@ void sendVal(double val,int x,int y){
 	sendbuf[2]=(double) y;
 	int i;
 	for(i=0;i<4;i++){
-		if(source[i]!=-1){
-			MPI_Isend(sendbuf,3,MPI_DOUBLE,source[i],0,MPI_COMM_WORLD,&req);
+		if(nbr[i]!=-1){
+			MPI_Isend(sendbuf,3,MPI_DOUBLE,nbr[i],0,MPI_COMM_WORLD,&req);
 			MPI_Request_free(&req);
 		}
 	}
@@ -135,10 +141,10 @@ void recvVal(double* rel_val,int* x_pos,int* y_pos){
 	double recvbuf[4][3];
 	int i;
 	for(i=0;i<4;i++)
-		if(source[i]!=-1)
-			MPI_Irecv(recvbuf+i,3,MPI_DOUBLE,source[i],0,MPI_COMM_WORLD,req+i);
+		if(nbr[i]!=-1)
+			MPI_Irecv(recvbuf+i,3,MPI_DOUBLE,nbr[i],0,MPI_COMM_WORLD,req+i);
 	for(i=0;i<4;i++)
-		if(source[i]!=-1){
+		if(nbr[i]!=-1){
 			MPI_Wait(req+i,stat+i);
 			rel_val[i]=recvbuf[i][0];
 			x_pos[i]=(int)recvbuf[i][1];
@@ -154,10 +160,11 @@ void doImageProcessing(){}
 void trgtByVal(int* x,int* y,double value,double* rel_value,int* x_pos,int* y_pos){
     int i;
     double dy=0,dx=0;
-    if(source[0]!=-1 && source[1]!=-1){
-        dy += -(value - rel_value[0])/(*y-y_pos[0]);
-        dy += -(value - rel_value[1])/(*y-y_pos[1]);
-        dy = (rel_value[0]-rel_value[1])/(y_pos[0]-y_pos[1])/dy;
+    double Hy=0,Hx=0;
+    if(nbr[0]!=-1 && nbr[1]!=-1){
+        Hy += (value - rel_value[0])/(*y-y_pos[0]);
+        Hy += (value - rel_value[1])/(*y-y_pos[1]);
+        dy = -(rel_value[0]-rel_value[1])/(y_pos[0]-y_pos[1])/Hy;
         *y= *y +dy;
         if(*y>y_pos[0])
             *y=y_pos[0]-1;
@@ -165,10 +172,10 @@ void trgtByVal(int* x,int* y,double value,double* rel_value,int* x_pos,int* y_po
             *y=y_pos[1]+1;
     }
     //if(w_rank==5){printf("%f\n",dy);}
-    if(source[2]!=-1 && source[3]!=-1){
-        dx += -(value - rel_value[2])/(*x-x_pos[2]);
-        dx += -(value - rel_value[3])/(*x-x_pos[3]);
-        dx = (rel_value[2]-rel_value[3])/(x_pos[2]-x_pos[3])/dx;
+    if(nbr[2]!=-1 && nbr[3]!=-1){
+        Hx += (value - rel_value[2])/(*x-x_pos[2]);
+        Hx += (value - rel_value[3])/(*x-x_pos[3]);
+        dx = -(rel_value[2]-rel_value[3])/(x_pos[2]-x_pos[3])/Hx;
         *x+=dx;
         if(*x>x_pos[2])
             *x=x_pos[2]-1;
@@ -176,7 +183,7 @@ void trgtByVal(int* x,int* y,double value,double* rel_value,int* x_pos,int* y_po
             *x=x_pos[3]+1;
     }
     
- //   printf("%d,%d,%d,%d dx=%f,dy=%f\n", source[0],source[1],source[2],source[3],dx,dy);
+ //   printf("%d,%d,%d,%d dx=%f,dy=%f\n", nbr[0],nbr[1],nbr[2],nbr[3],dx,dy);
 }
 int getwrank(int r,int c){
 	return c*COLS+r;

@@ -219,3 +219,5 @@ a.out
 
 figures/
 result
+*.o
+*.so
