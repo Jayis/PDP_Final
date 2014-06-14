@@ -126,7 +126,7 @@ int main(int argc,char* argv[]){
         }
         */
 		if(w_rank==0){
-			if(cnt >0)
+			if(cnt >100)
 				stop=1;
 		}
 		MPI_Bcast(&stop,1,MPI_INT,0,MPI_COMM_WORLD);
@@ -222,8 +222,8 @@ void doImageProcessing(int x, int y, Mat img, int r_rank, int c_rank, int w_rank
 	{
 	    Mat c_comb(SCRHEIGHT,SCRWIDTH, CV_8UC3, Scalar(0,0,0));
 	    combineWorld3(c_comb, recvbuf, SCRWIDTH, SCRHEIGHT, c_size);
-	    char strrr[20];
-	    sprintf(strrr,"./result-%d.jpg",t);
+	    char strrr[50];
+	    sprintf(strrr,"./results/result-%d.jpg",t);
 	    imwrite(strrr, c_comb);
 	}
 
