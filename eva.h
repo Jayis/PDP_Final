@@ -9,7 +9,7 @@
 
 using namespace std;
 using namespace cv;
-
+/*
 double eva2(const camera& cam, const int& t, Mat* img, Mat* img_Y, const camera& last_cam, const Mat* last_imgY)
 {
 	*img = take_pic ( cam, t);
@@ -66,9 +66,10 @@ double eva2(const camera& cam, const int& t, Mat* img, Mat* img_Y, const camera&
 
 	return static_sum + motion_sum;
 }
-
+*/
 double eva(const camera& cam, const int& t, Mat* img)
 {
+	Mat img_Y;
 	*img = take_pic ( cam, t);
 	//namedWindow( "gg window", WINDOW_AUTOSIZE );
 	//imshow( "gg window", img ); 
@@ -79,17 +80,17 @@ double eva(const camera& cam, const int& t, Mat* img)
 
 	////////////////////////////// static
 	GaussianBlur( *img, *img, Size(3,3), 0, 0, BORDER_DEFAULT );
-	cvtColor( *img, *img_Y, CV_RGB2GRAY );
+	cvtColor( *img, img_Y, CV_RGB2GRAY );
 	
 	Mat grad;
 	Mat grad_x, grad_y;
 	Mat abs_grad_x, abs_grad_y;
 
 	// Scharr( src_gray, grad, ddepth, order_grad_x, order_grad_y, window, scale, delte, )
-	Sobel( *img_Y, grad_x, -1, 1, 0, 3, 1, 0, BORDER_DEFAULT);
+	Sobel( img_Y, grad_x, -1, 1, 0, 3, 1, 0, BORDER_DEFAULT);
 	convertScaleAbs(grad_x, abs_grad_x);
 
-	Sobel( *img_Y, grad_y, -1, 0, 1, 3, 1, 0, BORDER_DEFAULT);
+	Sobel( img_Y, grad_y, -1, 0, 1, 3, 1, 0, BORDER_DEFAULT);
 	convertScaleAbs(grad_y, abs_grad_y);
 
 	addWeighted( abs_grad_x, 0.5, abs_grad_y, 0.5, 0, grad);

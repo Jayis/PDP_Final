@@ -14,8 +14,8 @@
 
 #define ROWS 6
 #define COLS 6
-#define SCRWIDTH	1000
-#define SCRHEIGHT	1000
+#define SCRWIDTH	1280
+#define SCRHEIGHT	720
 
 //ranks and sizes
 int w_rank, w_size; 
@@ -136,7 +136,7 @@ int main(int argc,char* argv[]){
 	exit(0);
 }
 
-double p(int x,int y,Mat* img,cnt){
+double p(int x,int y,Mat* img,int cnt){
     camera cam;
     cam.center_x=x;
     cam.center_y=y;
