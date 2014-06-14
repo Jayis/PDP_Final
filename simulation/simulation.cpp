@@ -25,7 +25,7 @@ void simulation_init ()
 
 Mat take_pic ( const camera& cam, const float& global_t )
 {
-	int frame_idx = (global_t * 24);
+	int frame_idx = global_t;
 	float center_x = int (cam.center_x) + 0.5;
 	float center_y = int (cam.center_y) + 0.5;
 	int L = (center_x + 0.5) - cam.width * cam.zoom / 2;

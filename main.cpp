@@ -11,8 +11,8 @@
 
 #define ROWS 4
 #define COLS 4
-#define SCRWIDTH	1278
-#define SCRHEIGHT	1600
+#define SCRWIDTH	1000
+#define SCRHEIGHT	1000
 
 //ranks and sizes
 int w_rank, w_size; 
@@ -72,8 +72,8 @@ int main(int argc,char* argv[]){
 	//
 	x = SCRWIDTH*(2*r_rank+1)/(2*r_size);
 	y = SCRHEIGHT*(2*c_rank+1)/(2*c_size);
-    default_w=SCRWIDTH/4-5;
-    default_h=SCRHEIGHT/4-5;
+    default_w=SCRWIDTH/r_size-5;
+    default_h=SCRHEIGHT/c_size-5;
     //
     if(c_rank!=c_size-1){//from up
         nbr[0]=getwrank(r_rank,c_rank+1);
@@ -117,7 +117,7 @@ double p(int x,int y){
     camera cam;
     cam.center_x=x;
     cam.center_y=y;
-    double res = eva(cam,1);
+    double res = eva(cam,2);
 	return -res;
 }
 
