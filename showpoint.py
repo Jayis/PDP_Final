@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+from matplotlib import animation
 
 f=open('result','r')
 dats = {}
@@ -14,9 +15,13 @@ for line in open('result'):
     dats[loop]["x"].append(int(x))
     dats[loop]["y"].append(int(y))
 
-for i in dats.keys():
-    fig=plt.figure()
-    plt.axis([0,1000,0,1000])
+def animate(i):
+    plt.cla()
+    plt.axis([0,1000,1000,0])
     plt.plot(dats[i]["x"],dats[i]["y"],'o')
-    fig.savefig('figures/'+str(i).zfill(3)+'.png')
-    plt.close(fig)
+    im = plt.imread('simulation/test/2.jpg')
+    implot = plt.imshow(im)
+
+fig =plt.figure()
+anim = animation.FuncAnimation(fig,animate,frames=100)
+anim.save('result.gif',writer='imagemagick',fps=5)

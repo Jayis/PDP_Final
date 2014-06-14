@@ -21,7 +21,7 @@ int main()
 	cam.height = 10;
 	cam.width = 10;
 
-	float sum = eva(cam, 0);
+	//float sum = eva(cam, 0);
 	
 	/*
 	Mat img, img_Y;
