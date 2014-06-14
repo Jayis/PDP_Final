@@ -178,106 +178,47 @@ void doImageProcessing(int x, int y, Mat img, int r_rank, int c_rank, int w_rank
     cam.center_y = y;
     unsigned char* ownData = NULL;
     int totalLength = SCRWIDTH  * SCRHEIGHT * 3;
-//    unsigned char recvbuf[r_size*totalLength];
-unsigned char * recvbuf = new unsigned char[r_size * totalLength];
+    unsigned char * recvbuf = new unsigned char[r_size * totalLength];
     ownData = new unsigned char[totalLength];
     for(int i = 0; i < totalLength; i++) ownData[i] = 0;
-//    camera2globalPic(take_pic(cam,0),x,y,ownData);
-//imwrite("./ksj.jpg",take_pic(cam,0));	
-//Mat o(SCRHEIGHT,SCRWIDTH,CV_8UC3,Scalar(0,0,0));
-//unsigned char* gg = o.data;
+
+    // to global pic size
     camera2globalPic(img,x,y,ownData);
-//for(int i = 0; i < 3000000; i++) gg[i] = ownData[i];
-//imwrite("./gg.jpg",o);
 
-	Mat o(SCRHEIGHT, SCRWIDTH, CV_8UC3, Scalar(0, 0, 0));
-	unsigned char* gg = o.data;
-	for (int i = 0; i < totalLength; i++){
-		gg[i] = ownData[i];
-	}
-	string dir = num2string(c_rank) + num2string(r_rank) + "Z.jpg";
-	imwrite(dir, o);
-
-//	for(int i = 0; i < totalLength * 3; i++) printf("%d",*(ownData+i));
 
     unsigned char* ptr = NULL;
     ptr = (unsigned char*) img.data;
     Mat r_comb(SCRHEIGHT,SCRWIDTH, CV_8UC3, Scalar(0,0,0));
 
 
-//	MPI_Gather(ownData, totalLength, MPI_UNSIGNED_CHAR, recvbuf+totalLength, totalLength, MPI_UNSIGNED_CHAR,0, colComm);
-	MPI_Gather(ownData, totalLength, MPI_UNSIGNED_CHAR, recvbuf, totalLength, MPI_UNSIGNED_CHAR,0, rowComm);
+    // MPI
+    MPI_Gather(ownData, totalLength, MPI_UNSIGNED_CHAR, recvbuf, totalLength, MPI_UNSIGNED_CHAR,0, rowComm);
 
 
-    if (r_rank ==0)//else
-    {
-	//receive r_rank == 1, 2, ...
-//	MPI_Status stat[r_size-1];
-//	MPI_Request req[r_size-1];
-
-//	for(int i = 0; i < totalLength; i++) recvbuf[i] = ownData[i];
-
-//	for(int i = 1; i < r_size; i++)
-//	    MPI_Irecv(recvbuf+i*totalLength,totalLength,MPI_UNSIGNED_CHAR,getwrank(i,c_rank),0,MPI_COMM_WORLD,req+i);
-//	    MPI_Recv(recvbuf+i*totalLength,totalLength,MPI_UNSIGNED_CHAR,getwrank(i,c_rank),0,MPI_COMM_WORLD,stat+i-1);
-//	MPI_Gather(ownData, totalLength, MPI_UNSIGNED_CHAR, recvbuf+totalLength, totalLength, MPI_UNSIGNED_CHAR,0, colComm);
-
-  //  return ;
-/*	for(int i=0;i<r_size-1;i++)
-	{
-	    MPI_Wait(req+i,stat+i);
-	}
-*/
-if(c_rank ==1){
+    if (r_rank ==0)
+    {////// output test
 	combineWorld3(r_comb, recvbuf, SCRWIDTH, SCRHEIGHT, r_size);
-	string dir = num2string(c_rank) + "ZZZZZ.jpg";
+	string dir = num2string(c_rank) + "_test.jpg";
 	imwrite(dir, r_comb);
-}
-
-
-/*
-Mat o(SCRHEIGHT,SCRWIDTH*r_size,CV_8UC3,Scalar(0,0,0));
-unsigned char* gg = o.data;
-for(int i = 0; i < totalLength * r_size; i++) gg[i] = recvbuf[i];
-imwrite("./ggg.jpg",o);
-*/
-
-
     }
 
-printf("gg");
     int stop[c_size];
     for(int i = 0; i < c_size; i++) stop[i] = 0;
     if(r_rank == 0) stop[c_rank] = 1;
 	MPI_Bcast(stop,1,MPI_INT,0,rowComm);
-
-
-    ////////////////////////// Harry test
-    if (r_rank == 0 && c_rank == 0){
-	imwrite("./RRRRR.jpg", r_comb);
-    }
-
 }
 
 void camera2globalPic(Mat input, int center_x, int center_y, unsigned char* output)
 {
-
-	
-	int totalLength = SCRWIDTH  * SCRHEIGHT * 3;
-	int xstart = center_x - 0.5 - input.cols / 2;
-	int ystart = center_y - 0.5 - input.rows / 2;
+    int totalLength = SCRWIDTH  * SCRHEIGHT * 3;
+    int xstart = center_x - 0.5 - input.cols / 2;
+    int ystart = center_y - 0.5 - input.rows / 2;
 
     for(int i = 0; i < input.cols; i++) for(int j = 0; j < input.rows; j++)
     {
 	for(int chn = 0; chn < 3; chn++)
 	{
-//		output[(i + j * SCRWIDTH)*3 + chn] = input.data[ ((i-(center_x - input.cols / 2))+(j-(center_y - input.rows / 2))*input.cols) * 3 + chn];
-//		output[ ((i-(center_x - input.cols / 2))+(j-(center_y - input.rows / 2))*SCRWIDTH) * 3 + chn] = input.data[(i + j * SCRWIDTH)*3 + chn];
-
-
-
-		output[  ((xstart + i)  + (ystart + j) * SCRWIDTH ) * 3 +chn ] = 
-		input.data[   (i + j * input.cols) * 3 + chn   ];
+	    output[ ((xstart + i) + (ystart + j) * SCRWIDTH ) * 3 +chn ] = input.data[ (i + j * input.cols) * 3 + chn ];
 	}
     }
 }
