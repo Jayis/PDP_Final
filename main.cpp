@@ -26,7 +26,7 @@ MPI_Comm rowComm,colComm;
 double p(int,int,Mat*);
 void sendVal(double,int,int);
 void recvVal(double*,int*,int*);
-void doImageProcessing(int x, int y, Mat img, int r_rank, int c_rank, int w_rank, int r_size, int c_size );
+void doImageProcessing(int x, int y, Mat img, int r_rank, int c_rank, int w_rank, int r_size, int c_size, int t );
 void camera2globalPic(Mat input, int center_x, int center_y, unsigned char * output);
 void trgtByVal(int*,int*,double,double*,int*,int*);
 int getwrank(int,int);
@@ -105,7 +105,7 @@ int main(int argc,char* argv[]){
 		recvVal(rel_value,x_pos,y_pos);
 
 //		camera cam; cam.center_x = x; cam.center_y = y;
-		doImageProcessing(x,y,img, r_rank, c_rank, w_rank, r_size, c_size);
+		doImageProcessing(x,y,img, r_rank, c_rank, w_rank, r_size, c_size,cnt);
     //    if(w_rank==5)
 	    printf("%d,%d|%d,%d|%d,%f\n",r_rank,c_rank,x,y,cnt,MPI_Wtime());
 		trgtByVal(&x,&y,value,rel_value,x_pos,y_pos);
@@ -133,7 +133,7 @@ double p(int x,int y,Mat* img){
     camera cam;
     cam.center_x=x;
     cam.center_y=y;
-    double res = eva(cam,0,img);
+    double res = eva(cam,2,img);
 	return -res;
 }
 
@@ -172,7 +172,7 @@ void recvVal(double* rel_val,int* x_pos,int* y_pos){
 		}
 }
 
-void doImageProcessing(int x, int y, Mat img, int r_rank, int c_rank, int w_rank, int r_size, int c_size ){
+void doImageProcessing(int x, int y, Mat img, int r_rank, int c_rank, int w_rank, int r_size, int c_size, int t ){
     camera cam;
     cam.center_x = x;
     cam.center_y = y;
@@ -198,9 +198,32 @@ void doImageProcessing(int x, int y, Mat img, int r_rank, int c_rank, int w_rank
     if (r_rank ==0)
     {////// output test
 	combineWorld3(r_comb, recvbuf, SCRWIDTH, SCRHEIGHT, r_size);
-	string dir = num2string(c_rank) + "_test.jpg";
-	imwrite(dir, r_comb);
+//	string dir = num2string(c_rank) + "_test.jpg";
+//	imwrite(dir, r_comb);
     }
+
+
+    delete[] recvbuf;
+
+    if( r_rank == 0)
+    {
+    	recvbuf = new unsigned char[c_size * totalLength];
+
+	MPI_Gather(r_comb.data, totalLength, MPI_UNSIGNED_CHAR, recvbuf, totalLength, MPI_UNSIGNED_CHAR,0, colComm);
+
+	if( c_rank == 0)
+	{
+	    Mat c_comb(SCRHEIGHT,SCRWIDTH, CV_8UC3, Scalar(0,0,0));
+	    combineWorld3(c_comb, recvbuf, SCRWIDTH, SCRHEIGHT, c_size);
+	    char strrr[20];
+	    sprintf(strrr,"./result-%d.jpg",t);
+	    imwrite(strrr, c_comb);
+	}
+
+	delete[] recvbuf;
+    }
+
+
 
     int stop[c_size];
     for(int i = 0; i < c_size; i++) stop[i] = 0;
