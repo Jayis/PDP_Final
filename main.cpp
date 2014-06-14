@@ -91,7 +91,7 @@ int main(int argc,char* argv[]){
 	time_t ltime;
     x=x0;
     y=y0;
-    double alpha=0.9;
+    double alpha=0.5;
 	//routine
 	while(stop==0){
 		value = p(x,y);// the importance function
@@ -106,12 +106,12 @@ int main(int argc,char* argv[]){
 
 		//Barrier with Stop Signal
 		cnt++;
-       /* 
+        
         if(cnt%12==0){
             x= alpha*x + (1-alpha)*x0;
             y= alpha*y + (1-alpha)*y0;
         }
-        */
+        
 		if(w_rank==0){
 			if(cnt >100)
 				stop=1;
