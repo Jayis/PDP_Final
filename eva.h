@@ -1,5 +1,6 @@
 #include <iostream>
 #include <string>
+#include <cmath>
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
@@ -19,7 +20,7 @@ double eva2(const camera& cam, const int& t, Mat* img,camera& last_cam, Mat* las
 	double static_sum = 0;
 	Mat img_Y;
 	*img = take_pic ( cam, t);
-
+	
 	////////////////////////////// static
 	
 	GaussianBlur( *img, *img, Size(3,3), 0, 0, BORDER_DEFAULT );
@@ -47,29 +48,39 @@ double eva2(const camera& cam, const int& t, Mat* img,camera& last_cam, Mat* las
 	
 	///////////////////////////// motion
 	double motion_sum = 0;
+	
+	int count=0;
 	if (t != 0){
 		unsigned char* last_data = (unsigned char*)((*last_img_Y).data);
 		unsigned char* cur_data = (unsigned char*)((img_Y).data);
-		int shift_x = (int)last_cam.center_x - (int)cam.center_x;
-		int shift_y = (int)last_cam.center_y - (int)cam.center_y;
+		int shift_x = (int)cam.center_x - (int)last_cam.center_x;
+		int shift_y = (int)cam.center_y - (int)last_cam.center_y;
 		double change;
 		for (i = 0; i < img->rows; i++){
 			if ((i + shift_y) < 0 || (i + shift_y) >= (img->rows)) continue;
 			for (j = 0; j < (*img).cols; j++){
 				if ((j + shift_x) < 0 || (j + shift_x) >= (img->cols)) continue;
 				change = (double)(cur_data[i*(*img).cols + j]) - (double)(last_data[(i + shift_y)*(*img).cols + (j + shift_x)]);
-				//if (change < 0) change = -change;
-
-				motion_sum++;
+				if (change < 0) change = -change;
+				if (change > 50){
+					count++;
+					motion_sum += exp(change/5);
+				}
+				//count++;
 			}
 		}
 	}
+	if (count!=0){
+		motion_sum = motion_sum/count;
+	}
+	
 	last_cam.center_x = cam.center_x;
 	last_cam.center_y = cam.center_y;
 //	(*last_img_Y) = img_Y;
 	img_Y.copyTo(*last_img_Y);
+	
 	//printf("static:%6f,	motion:%6f\n",static_sum, motion_sum);
-	return static_sum;// + motion_sum;
+	return static_sum + motion_sum;
 }
 
 double eva(const camera& cam, const int& t, Mat* img)
