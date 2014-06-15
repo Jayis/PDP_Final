@@ -5,11 +5,12 @@ LDFLAGS=`pkg-config --libs opencv`
 LIBS=-L./ -lsimulation
 
 main: simu
-	$(MPICC) $(CFLAGS) main.cpp $(LIBS) $(LDFLAGS)
+	$(MPICC) $(CFLAGS) main.cpp *.o $(LIBS) $(LDFLAGS)
 run: main 
 	mpiexec -n 36 a.out
 simu : 
 	$(CC) $(CFLAGS) -c -fPIC simulation/*.cpp $(LDFLAGS)
+	rm -rf main.o
 	$(CC) $(CFLAGS) -shared *.o -o libsimulation.so $(LDFLAGS)
 	$(CC) $(CFLAGS) -c -fPIC combine.cpp $(LDFLAGS)
 clean :
