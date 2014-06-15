@@ -66,7 +66,8 @@ double eva2(const camera& cam, const int& t, Mat* img,camera& last_cam, Mat* las
 	}
 	last_cam.center_x = cam.center_x;
 	last_cam.center_y = cam.center_y;
-	(*last_img_Y) = img_Y;
+//	(*last_img_Y) = img_Y;
+	img_Y.copyTo(*last_img_Y);
 	//printf("static:%6f,	motion:%6f\n",static_sum, motion_sum);
 	return static_sum;// + motion_sum;
 }
