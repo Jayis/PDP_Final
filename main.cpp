@@ -29,6 +29,7 @@ double p2(int,int,Mat*,int,camera&,Mat*);
 void sendVal(double,int,int);
 void recvVal(double*,int*,int*);
 void doImageProcessing(int x, int y, Mat img, int r_rank, int c_rank, int w_rank, int r_size, int c_size, int t );
+void doImageProcessing2(int x, int y, Mat img, int r_rank, int c_rank, int w_rank, int r_size, int c_size, int t, Mat* history);
 void camera2globalPic(Mat input, int center_x, int center_y, unsigned char * output);
 void trgtByVal(int*,int*,double,double*,int*,int*);
 int getwrank(int,int);
@@ -250,6 +251,62 @@ void doImageProcessing(int x, int y, Mat img, int r_rank, int c_rank, int w_rank
 	MPI_Bcast(stop,1,MPI_INT,0,rowComm);
 }
 
+void doImageProcessing2(int x, int y, Mat img, int r_rank, int c_rank, int w_rank, int r_size, int c_size, int t, Mat* history ){
+    camera cam;
+    cam.center_x = x;
+    cam.center_y = y;
+    unsigned char* ownData = NULL;
+    int totalLength = SCRWIDTH  * SCRHEIGHT * 3;
+    unsigned char * recvbuf = new unsigned char[r_size * totalLength];
+    ownData = new unsigned char[totalLength];
+    for(int i = 0; i < totalLength; i++) ownData[i] = 0;
+
+    // to global pic size
+    camera2globalPic(img,x,y,ownData);
+
+
+    unsigned char* ptr = NULL;
+    ptr = (unsigned char*) img.data;
+    Mat r_comb(SCRHEIGHT,SCRWIDTH, CV_8UC3, Scalar(0,0,0));
+
+
+    // MPI
+    MPI_Gather(ownData, totalLength, MPI_UNSIGNED_CHAR, recvbuf, totalLength, MPI_UNSIGNED_CHAR,0, rowComm);
+
+
+    if (r_rank ==0)
+    {////// output test
+	combineWorld3(r_comb, recvbuf, SCRWIDTH, SCRHEIGHT, r_size);
+//	string dir = num2string(c_rank) + "_test.jpg";
+//	imwrite(dir, r_comb);
+    }
+
+
+    delete[] recvbuf;
+
+    if( r_rank == 0)
+    {
+    	recvbuf = new unsigned char[c_size * totalLength];
+
+	MPI_Gather(r_comb.data, totalLength, MPI_UNSIGNED_CHAR, recvbuf, totalLength, MPI_UNSIGNED_CHAR,0, colComm);
+
+	if( c_rank == 0)
+	{
+	    Mat c_comb(SCRHEIGHT,SCRWIDTH, CV_8UC3, Scalar(0,0,0));
+	    combineWorld3(c_comb, recvbuf, SCRWIDTH, SCRHEIGHT, c_size);
+	    if( t == 0)
+		c_comb.copyTo(*history);
+	    else
+		combineWithHistory(*history, c_comb);
+	    char strrr[50];
+	    sprintf(strrr,"./results/result-%d.jpg",t);
+	    imwrite(strrr, c_comb);
+	}
+
+	delete[] recvbuf;
+    }
+
+//use old to complete new
 void combineWithHistory(Mat oldMat, Mat newMat)
 {
     assert(oldMat.cols == newMat.cols);
