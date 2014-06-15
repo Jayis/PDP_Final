@@ -25,7 +25,7 @@ double k;
 MPI_Comm rowComm,colComm;
 
 double p(int,int,Mat*,int);
-double p2(int,int,Mat*,int);
+double p2(int,int,Mat*,int,camera&,Mat*);
 void sendVal(double,int,int);
 void recvVal(double*,int*,int*);
 void doImageProcessing(int x, int y, Mat img, int r_rank, int c_rank, int w_rank, int r_size, int c_size, int t );
@@ -99,15 +99,19 @@ int main(int argc,char* argv[]){
     y=y0;
     double alpha=0.5;
     Mat img;
+	///////////Harry add 2 lines
+	camera last_cam;
+	Mat last_img_Y;
 	//routine
-	value = p2(x,y,&img,0);
+	value = p2(x,y,&img,0, last_cam, &last_img_Y);
 	int x_o=x0,y_o=y0;
 	double maxval,minval;
 	MPI_Allreduce(&value,&maxval,1,MPI_DOUBLE,MPI_MAX,MPI_COMM_WORLD);
 	MPI_Allreduce(&value,&minval,1,MPI_DOUBLE,MPI_MIN,MPI_COMM_WORLD);
 	k = maxval-minval;	
+	
 	while(stop==0){
-		value = p2(x,y,&img,cnt);// the importance function
+		value = p2(x,y,&img,cnt,last_cam,&last_img_Y);// the importance function
 		sendVal(value,x,y);
 		//printf("%d\n",w_rank);
 		recvVal(rel_value,x_pos,y_pos);
@@ -127,7 +131,7 @@ int main(int argc,char* argv[]){
         }
         */
 		if(w_rank==0){
-			if(cnt >79)
+			if(cnt >20)
 				stop=1;
 		}
 		MPI_Bcast(&stop,1,MPI_INT,0,MPI_COMM_WORLD);
@@ -144,11 +148,11 @@ double p(int x,int y,Mat* img,int cnt){
     double res = eva(cam,cnt,img);
 	return -res;
 }
-double p2(int x,int y,Mat* img,int cnt){
+double p2(int x,int y,Mat* img,int cnt,camera& last_cam, Mat* last_img_Y){
     camera cam;
     cam.center_x=x;
     cam.center_y=y;
-    double res = eva2(cam,cnt,img);
+    double res = eva2(cam,cnt,img,last_cam,last_img_Y);
 	return -res;
 }
 

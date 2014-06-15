@@ -10,21 +10,18 @@
 using namespace std;
 using namespace cv;
 
-Mat img_Y, last_img_Y;
-camera last_cam;
+//Mat img_Y, last_img_Y;
+//camera last_cam;
 
-double eva2(const camera& cam, const int& t, Mat* img)
-{
-
+double eva2(const camera& cam, const int& t, Mat* img,camera& last_cam, Mat* last_img_Y)
+{	
+	int i, j;
+	double static_sum = 0;
+	Mat img_Y;
 	*img = take_pic ( cam, t);
-	//namedWindow( "gg window", WINDOW_AUTOSIZE );
-	//imshow( "gg window", img ); 
-
-	//IplImage* temp = new IplImage(img);
-	//IplImage* tempYIQ = convertImageRGBtoYIQ (temp);
-	//IplImage* tempY = GetYImg (tempYIQ);
 
 	////////////////////////////// static
+	
 	GaussianBlur( *img, *img, Size(3,3), 0, 0, BORDER_DEFAULT );
 	cvtColor( *img, img_Y, CV_RGB2GRAY );
 	
@@ -41,8 +38,6 @@ double eva2(const camera& cam, const int& t, Mat* img)
 
 	addWeighted( abs_grad_x, 0.5, abs_grad_y, 0.5, 0, grad);
 	
-	int i, j;
-	double static_sum = 0;
 	unsigned char* data = (unsigned char*)(grad.data);
 	for (i = 0; i < grad.rows; i++){
 		for (j = 0; j < grad.cols; j++){
@@ -53,7 +48,7 @@ double eva2(const camera& cam, const int& t, Mat* img)
 	///////////////////////////// motion
 	double motion_sum = 0;
 	if (t != 0){
-		unsigned char* last_data = (unsigned char*)((last_img_Y).data);
+		unsigned char* last_data = (unsigned char*)((*last_img_Y).data);
 		unsigned char* cur_data = (unsigned char*)((img_Y).data);
 		int shift_x = (int)last_cam.center_x - (int)cam.center_x;
 		int shift_y = (int)last_cam.center_y - (int)cam.center_y;
@@ -62,22 +57,23 @@ double eva2(const camera& cam, const int& t, Mat* img)
 			if ((i + shift_y) < 0 || (i + shift_y) >= (img->rows)) continue;
 			for (j = 0; j < (*img).cols; j++){
 				if ((j + shift_x) < 0 || (j + shift_x) >= (img->cols)) continue;
-				change = (double)(cur_data[i*(*img).cols + j] - last_data[(i + shift_y)*(*img).cols + (j + shift_x)]);
-				if (change < 0) change = -change;
-				motion_sum += change*100;
+				change = (double)(cur_data[i*(*img).cols + j]) - (double)(last_data[(i + shift_y)*(*img).cols + (j + shift_x)]);
+				//if (change < 0) change = -change;
+
+				motion_sum++;
 			}
 		}
 	}
 	last_cam.center_x = cam.center_x;
 	last_cam.center_y = cam.center_y;
-	last_img_Y = img_Y;
-
-	return static_sum + motion_sum;
+	(*last_img_Y) = img_Y;
+	//printf("static:%6f,	motion:%6f\n",static_sum, motion_sum);
+	return static_sum;// + motion_sum;
 }
 
 double eva(const camera& cam, const int& t, Mat* img)
 {
-	//Mat img_Y;
+	Mat img_Y;
 	*img = take_pic ( cam, t);
 	//namedWindow( "gg window", WINDOW_AUTOSIZE );
 	//imshow( "gg window", img ); 
